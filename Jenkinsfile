@@ -14,7 +14,6 @@ pipeline {
             }
         }
 
-
         stage('SCM Checkout'){
             steps {
                 echo 'Checking out project on Git Repo'
@@ -27,8 +26,8 @@ pipeline {
                 echo 'Build Compile project'
                 sh 'mvn clean compile'
                 echo 'Build Compile Successful'
-                }
             }
+        }
         
         
         stage ('Build') {
@@ -40,18 +39,22 @@ pipeline {
         }
         
         
-        stage ('Deploy to Tomcat'){
+        stage ('Deploy to Kubernetes'){
             steps {
-                echo 'Deploy project on Tomcat Server'
-                deploy adapters: [
-                    tomcat8(credentialsId: 'deployer_user', 
-                    path: '', url: 'http://18.188.44.224:8080/')], contextPath: null, war: '**/*.war'
+                echo 'Deploy project on Kubernetes cluster'
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'ansible-server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/create-devops-image.yml;', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//opt//kubernetes', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
                 
-                echo 'Deploy on Tomcat Server Successful'
+                echo 'Deploy on Kubernetes Successful'
             }
                 
+        }
         
+        stage('Kubernetes deployment and service') {
+            steps {
+                echo 'Create Kubernetes deployment and service with Ansible'
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'ansible-server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/kubernetes-doccorso-deployment.yml;
+    ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/kubernetes-doccorso-service.yml;''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
+        }
     }
-}
-
 }
