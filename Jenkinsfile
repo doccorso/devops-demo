@@ -39,12 +39,11 @@ pipeline {
         }
         
         
-        stage ('Deploy to Kubernetes'){
+        stage ('Create and push image to DockerHub'){
             steps {
-                echo 'Deploy project on Kubernetes cluster'
-                sshPublisher(publishers: [sshPublisherDesc(configName: 'ansible-server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/create-devops-image.yml;', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//opt//kubernetes', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
-                
-                echo 'Deploy on Kubernetes Successful'
+                echo 'Create and push image with Ansible'
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'ansible-server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/create-devops-image.yml;', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//opt//kubernetes', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])                
+                echo 'Push on DockerHub Successful'
             }
                 
         }
@@ -52,8 +51,8 @@ pipeline {
         stage('Kubernetes deployment and service') {
             steps {
                 echo 'Create Kubernetes deployment and service with Ansible'
-                sshPublisher(publishers: [sshPublisherDesc(configName: 'ansible-server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/kubernetes-doccorso-deployment.yml;
-    ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/kubernetes-doccorso-service.yml;''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'ansible-server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/kubernetes-doccorso-deployment.yml;    ansible-playbook -i /opt/kubernetes/hosts /opt/kubernetes/kubernetes-doccorso-service.yml;''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                echo 'Kubernetes Deployment Successful'
             }
         }
     }
