@@ -13,14 +13,7 @@ pipeline {
                 ''' 
             }
         }
-
-        stage('SCM Checkout'){
-            steps {
-                echo 'Checking out project on Git Repo'
-                git 'https://github.com/doccorso/devops-demo.git'
-            }
-        }
-        
+     
         stage ('Compile Stage') {
             steps {
                 echo 'Build Compile project'
